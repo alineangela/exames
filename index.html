@@ -203,7 +203,7 @@ html,body{background:transparent;font-family:var(--font);font-size:14px;color:va
     Integração Notion
   </h4>
   <label>API Key da integração</label>
-  <input type="password" id="notionKey" placeholder="secret_xxxxxxxxxxxxxxxxxxx" oninput="saveSettings()">
+  <input type="password" id="notionKey" placeholder="ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" oninput="saveSettings()">
   <label>ID da base de dados</label>
   <input type="text" id="notionDb" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="saveSettings()">
   <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -214,14 +214,36 @@ html,body{background:transparent;font-family:var(--font);font-size:14px;color:va
   </div>
   <div id="nsyncStatus" style="display:none" class="nsync"></div>
   <div class="settings-note">
-    <strong>Como configurar:</strong><br>
-    1. Em notion.so → Settings → Connections → Develop or manage integrations → New integration<br>
-    2. Dê um nome, selecione o workspace, copie o <em>Internal Integration Secret</em><br>
-    3. Na sua base de dados, clique em ··· → Connections → adicione sua integração<br>
-    4. Copie o ID da URL da base de dados (o trecho após notion.so/ e antes do ?)<br><br>
-    A base de dados deve ter as colunas: <strong>Exame</strong> (título), <strong>Valor</strong> (número), <strong>Data</strong> (data).<br>
-    A coluna <strong>Faixa</strong> (texto) é opcional — se presente, substitui a faixa padrão.<br><br>
-    <a href="https://developers.notion.com/docs/getting-started" target="_blank">→ Documentação Notion API</a>
+    <strong>Passo 1 — Criar a integração</strong><br>
+    Acesse <a href="https://www.notion.com/my-integrations" target="_blank">notion.com/my-integrations</a> no navegador<br>
+    Clique em <strong>+ New integration</strong><br>
+    Dê um nome (ex: "Meus Exames") e selecione seu workspace<br>
+    Clique em <strong>Save</strong><br>
+    Vá na aba <strong>Configuration</strong> e copie o <strong>Internal Integration Secret</strong><br>
+    O token começa com <strong>ntn_</strong> (formato atual desde set/2024)<br>
+    Cole esse valor no campo <strong>API Key</strong> acima<br><br>
+
+    <strong>Passo 2 — Dar acesso à base de dados</strong><br>
+    Abra sua base "Meus Exames" no Notion<br>
+    Clique nos <strong>···</strong> no canto superior direito<br>
+    Role até o final e clique em <strong>+ Add connections</strong><br>
+    Pesquise o nome da integração e selecione<br>
+    Confirme o pop-up de permissão<br>
+    ⚠️ Sem esse passo a sincronização retorna erro 403<br><br>
+
+    <strong>Passo 3 — Pegar o ID da base</strong><br>
+    Com a base aberta no navegador, a URL tem este formato:<br>
+    <em style="word-break:break-all;font-size:10px">notion.so/Nome-do-workspace/<strong>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</strong>?v=...</em><br>
+    Copie os 32 caracteres entre a última <strong>/</strong> e o <strong>?</strong><br>
+    Cole no campo <strong>ID da base</strong> acima — com ou sem hífens funciona<br><br>
+
+    <strong>Estrutura obrigatória da base</strong><br>
+    <strong>Exame</strong> — Título (código, ex: VIT-D)<br>
+    <strong>Valor</strong> — Número<br>
+    <strong>Data</strong> — Data<br>
+    <strong>Faixa</strong> — Texto (opcional)<br><br>
+
+    <a href="https://developers.notion.com/docs/create-a-notion-integration" target="_blank">→ Documentação oficial Notion API</a>
   </div>
 </div>
 
