@@ -202,10 +202,8 @@ html,body{background:transparent;font-family:var(--font);font-size:14px;color:va
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
     Integração Notion
   </h4>
-  <label>API Key da integração</label>
-  <input type="password" id="notionKey" placeholder="ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" oninput="saveSettings()">
-  <label>ID da base de dados</label>
-  <input type="text" id="notionDb" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="saveSettings()">
+  <label>URL do seu Cloudflare Worker</label>
+  <input type="text" id="workerUrl" placeholder="https://meus-exames.seu-usuario.workers.dev" oninput="saveSettings()">
   <div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="btn primary" onclick="syncNotion()" style="flex:1;justify-content:center">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8A6 6 0 102 8"/><path d="M14 8l-2-2M14 8l2-2"/></svg>
@@ -214,36 +212,48 @@ html,body{background:transparent;font-family:var(--font);font-size:14px;color:va
   </div>
   <div id="nsyncStatus" style="display:none" class="nsync"></div>
   <div class="settings-note">
-    <strong>Passo 1 — Criar a integração</strong><br>
-    Acesse <a href="https://www.notion.com/my-integrations" target="_blank">notion.com/my-integrations</a> no navegador<br>
-    Clique em <strong>+ New integration</strong><br>
-    Dê um nome (ex: "Meus Exames") e selecione seu workspace<br>
-    Clique em <strong>Save</strong><br>
-    Vá na aba <strong>Configuration</strong> e copie o <strong>Internal Integration Secret</strong><br>
-    O token começa com <strong>ntn_</strong> (formato atual desde set/2024)<br>
-    Cole esse valor no campo <strong>API Key</strong> acima<br><br>
+    <strong>Passo 1 — Criar a integração no Notion</strong><br>
+    Acesse <a href="https://www.notion.com/my-integrations" target="_blank">notion.com/my-integrations</a><br>
+    Clique em <strong>+ New integration</strong>, dê um nome (ex: "Meus Exames"), salve<br>
+    Copie o token — começa com <strong>ntn_</strong><br>
+    Guarde esse token, você vai precisar no Passo 4<br><br>
 
-    <strong>Passo 2 — Dar acesso à base de dados</strong><br>
-    Abra sua base "Meus Exames" no Notion<br>
-    Clique nos <strong>···</strong> no canto superior direito<br>
-    Role até o final e clique em <strong>+ Add connections</strong><br>
-    Pesquise o nome da integração e selecione<br>
-    Confirme o pop-up de permissão<br>
-    ⚠️ Sem esse passo a sincronização retorna erro 403<br><br>
+    <strong>Passo 2 — Conectar à base de dados</strong><br>
+    Abra a base "Meus Exames" no Notion<br>
+    Clique em <strong>···</strong> (canto superior direito) → <strong>+ Add connections</strong><br>
+    Selecione sua integração e confirme<br>
+    ⚠️ Sem isso, o Worker retorna erro 403<br><br>
 
     <strong>Passo 3 — Pegar o ID da base</strong><br>
-    Com a base aberta no navegador, a URL tem este formato:<br>
-    <em style="word-break:break-all;font-size:10px">notion.so/Nome-do-workspace/<strong>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</strong>?v=...</em><br>
-    Copie os 32 caracteres entre a última <strong>/</strong> e o <strong>?</strong><br>
-    Cole no campo <strong>ID da base</strong> acima — com ou sem hífens funciona<br><br>
+    Na URL da base: <em style="word-break:break-all;font-size:10px">notion.so/workspace/<strong>ID-AQUI</strong>?v=...</em><br>
+    Copie só os 32 caracteres antes do <strong>?</strong><br>
+    Guarde esse ID, você vai precisar no Passo 4<br><br>
 
-    <strong>Estrutura obrigatória da base</strong><br>
-    <strong>Exame</strong> — Título (código, ex: VIT-D)<br>
-    <strong>Valor</strong> — Número<br>
-    <strong>Data</strong> — Data<br>
-    <strong>Faixa</strong> — Texto (opcional)<br><br>
+    <strong>Passo 4 — Criar o Cloudflare Worker</strong><br>
+    Acesse <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> e crie uma conta gratuita<br>
+    No menu lateral clique em <strong>Workers &amp; Pages</strong><br>
+    Clique em <strong>Create</strong> → <strong>Create Worker</strong><br>
+    Dê o nome <strong>meus-exames</strong> → clique em <strong>Deploy</strong><br>
+    Na próxima tela clique em <strong>Edit code</strong><br>
+    Apague todo o código que aparece e cole o conteúdo do arquivo <strong>notion-worker.js</strong> que você baixou<br>
+    Clique em <strong>Deploy</strong> (canto superior direito)<br><br>
 
-    <a href="https://developers.notion.com/docs/create-a-notion-integration" target="_blank">→ Documentação oficial Notion API</a>
+    <strong>Passo 5 — Adicionar as variáveis secretas</strong><br>
+    Após o deploy, clique em <strong>Settings</strong> (aba do Worker)<br>
+    Clique em <strong>Variables and Secrets</strong><br>
+    Clique em <strong>+ Add</strong> e adicione:<br>
+    — Variável: <strong>NOTION_KEY</strong> → valor: seu token <em>ntn_...</em><br>
+    — Variável: <strong>NOTION_DB</strong> → valor: o ID de 32 caracteres da base<br>
+    Marque ambas como <strong>Secret</strong> para ficarem criptografadas<br>
+    Clique em <strong>Deploy</strong> novamente para aplicar<br><br>
+
+    <strong>Passo 6 — Copiar a URL e colar aqui</strong><br>
+    No painel do Worker, copie a URL no formato:<br>
+    <em>https://meus-exames.seu-usuario.workers.dev</em><br>
+    Cole no campo acima e clique em Sincronizar<br><br>
+
+    <a href="https://developers.notion.com/docs/create-a-notion-integration" target="_blank">→ Documentação Notion API</a> &nbsp;·&nbsp;
+    <a href="https://developers.cloudflare.com/workers/get-started/dashboard/" target="_blank">→ Documentação Cloudflare Workers</a>
   </div>
 </div>
 
@@ -501,7 +511,6 @@ C.forEach(cat=>cat.tests.forEach(t=>allTests.push({...t,cat:cat.id})));
 
 /* ─── State ────────────────────────────────── */
 let results={},dates={},aId=null,sq='',statusFilter=null,mPicked=null,gender=null;
-let notionKey='',notionDb='';
 
 const DEMO={
 'VIT-D':27,'VIT-B12':250,'VIT-B9':30,
@@ -718,46 +727,38 @@ function addResult(){
 }
 
 /* ─── Settings / Notion ────────────────────── */
+let workerUrl='';
+
 function toggleSettings(){
   const p=document.getElementById('settingsPanel');
   p.style.display=p.style.display==='none'?'':'none';
 }
 function saveSettings(){
-  notionKey=document.getElementById('notionKey').value.trim();
-  notionDb=document.getElementById('notionDb').value.trim().replace(/-/g,'');
-  try{localStorage.setItem('nk',btoa(notionKey));localStorage.setItem('nd',notionDb);}catch(e){}
+  workerUrl=document.getElementById('workerUrl').value.trim().replace(/\/$/,'');
+  try{localStorage.setItem('wu',workerUrl);}catch(e){}
 }
 function loadSettings(){
   try{
-    const k=localStorage.getItem('nk'),d=localStorage.getItem('nd');
-    if(k){notionKey=atob(k);document.getElementById('notionKey').value=notionKey;}
-    if(d){notionDb=d;document.getElementById('notionDb').value=d;}
+    const w=localStorage.getItem('wu');
+    if(w){workerUrl=w;document.getElementById('workerUrl').value=w;}
   }catch(e){}
 }
 
 async function syncNotion(){
-  if(!notionKey||!notionDb){
-    showNStatus('err','Preencha a API Key e o ID da base de dados.');
+  if(!workerUrl){
+    showNStatus('err','Cole a URL do seu Cloudflare Worker acima.');
     document.getElementById('settingsPanel').style.display='';
     return;
   }
   showNStatus('loading','Sincronizando com o Notion...');
-  const dbId=notionDb.replace(/-/g,'');
-  // Insert dashes in UUID format if needed
-  const fmtId=dbId.length===32?`${dbId.slice(0,8)}-${dbId.slice(8,12)}-${dbId.slice(12,16)}-${dbId.slice(16,20)}-${dbId.slice(20)}`:notionDb;
-  const proxy='https://corsproxy.io/?';
-  const url=`${proxy}https://api.notion.com/v1/databases/${fmtId}/query`;
   try{
-    const resp=await fetch(url,{
-      method:'POST',
-      headers:{
-        'Authorization':`Bearer ${notionKey}`,
-        'Notion-Version':'2022-06-28',
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({page_size:100})
-    });
-    if(!resp.ok){const e=await resp.json();showNStatus('err',`Erro ${resp.status}: ${e.message||'verifique a API key e permissões'}`);return;}
+    const resp=await fetch(workerUrl);
+    if(!resp.ok){
+      let msg='Erro '+resp.status;
+      try{const e=await resp.json();msg+=': '+(e.error||'verifique as variáveis do Worker');}catch(_){}
+      showNStatus('err',msg);
+      return;
+    }
     const data=await resp.json();
     let added=0;
     data.results.forEach(page=>{
@@ -774,12 +775,13 @@ async function syncNotion(){
     });
     document.getElementById('clrbtn').style.display='';
     aId=null;sq='';statusFilter=null;
-    document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+    document.getElementById('ls').value='';
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
     render();
     showNStatus('ok',`${added} resultado${added!==1?'s':''} importado${added!==1?'s':''} do Notion.`);
     document.getElementById('notionBtn').classList.add('synced');
   }catch(e){
-    showNStatus('err','Erro de rede. Verifique a chave e tente novamente.');
+    showNStatus('err','Não foi possível alcançar o Worker. Verifique a URL e tente novamente.');
   }
 }
 function showNStatus(type,msg){
