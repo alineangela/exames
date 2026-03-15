@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exames Laboratoriais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ok:    #5a905f;
+  --ok-lt: #d6ead7;
+  --ok-tx: #2a5c2e;
+  --lo:    #f4bbba;
+  --hi:    #7a2535;
+  --hi-lt: #e8c4cc;
+  --hi-tx: #551b2a;
+  --lo-badge-bg: #eeb4af;
+  --lo-badge-tx: #7a2535;
+  --lox-badge-bg:#f5c0c0;
+  --lox-badge-tx:#8b1a1a;
+  --dot-ok: #3a7a40;
+  --dot-lo: #a84050;
+  --dot-lox:#b82020;
+  --dot-hi: #7a2535;
+  --dot-hix:#5a1020;
+  --bg:     transparent;
+  --surface:#ffffff;
+  --surface2:#f5f3f0;
+  --border: #e0dbd5;
+  --border2:#ccc7c0;
+  --tx:     #1a1714;
+  --tx2:    #6b6560;
+  --tx3:    #a09890;
+  --radius: 10px;
+  --font:   'DM Sans', system-ui, sans-serif;
+  --mono:   'DM Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent;font-family:var(--font);font-size:14px;color:var(--tx);-webkit-font-smoothing:antialiased}
+
+/* ── Layout ────────────────────────────────── */
+.wrap{padding:0;max-width:900px;margin:0 auto}
+
+/* ── Top bar ───────────────────────────────── */
+.topbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-family:var(--font);border:1px solid var(--border2);border-radius:99px;background:var(--surface);color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn.primary{background:var(--ok);color:#fff;border-color:var(--ok);font-weight:500}
+.btn.primary:hover{background:#4a7a4f}
+.btn.notion{background:#191919;color:#fff;border-color:#191919}
+.btn.notion:hover{background:#333}
+.btn.notion.synced{background:#2d6e3e;border-color:#2d6e3e}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+
+/* ── Gender toggle ─────────────────────────── */
+.gender-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.gender-lbl{font-size:12px;color:var(--tx2);font-weight:500}
+.gtoggle{display:flex;border:1px solid var(--border2);border-radius:99px;overflow:hidden;background:var(--surface)}
+.gopt{padding:5px 14px;font-size:12px;font-family:var(--font);cursor:pointer;background:transparent;color:var(--tx2);border:none;transition:all .15s}
+.gopt.on{background:var(--tx);color:var(--surface);font-weight:500}
+.gpend{font-size:11px;color:var(--tx3);font-style:italic}
+
+/* ── Search ────────────────────────────────── */
+.srch-wrap{position:relative;margin-bottom:10px}
+.srch-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--tx3);pointer-events:none}
+.srch{width:100%;padding:8px 12px 8px 32px;font-size:13px;font-family:var(--font);border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--tx);outline:none;transition:border-color .15s}
+.srch:focus{border-color:var(--border2)}
+
+/* ── Pills ─────────────────────────────────── */
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.pill{padding:4px 11px;font-size:11px;font-family:var(--font);border:1px solid var(--border);border-radius:99px;background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--border2)}
+.pill.on{background:var(--tx);color:var(--surface);border-color:var(--tx);font-weight:500}
+
+/* ── Summary cards ─────────────────────────── */
+.sumbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;min-width:64px;text-align:center;cursor:pointer;transition:border-color .15s}
+.scard:hover,.scard.active{border-color:var(--border2)}
+.scard .sv{font-size:20px;font-weight:500;line-height:1.2}
+.scard .sl{font-size:10px;color:var(--tx2);margin-top:2px;font-weight:500;letter-spacing:.03em;text-transform:uppercase}
+
+/* ── Legend ────────────────────────────────── */
+.leg{display:flex;gap:14px;margin-bottom:12px;font-size:11px;color:var(--tx2);align-items:center;flex-wrap:wrap}
+.ld{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+.leg-dot{width:12px;height:12px;border-radius:50%;background:#3a7a40;border:2px solid #fff;box-shadow:0 0 0 1px #3a7a40;display:inline-block;margin-right:3px;vertical-align:middle}
+
+/* ── Section header ────────────────────────── */
+.sec{font-size:10px;font-weight:500;color:var(--tx3);margin:16px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border);letter-spacing:.06em;text-transform:uppercase}
+
+/* ── Row ───────────────────────────────────── */
+.trow{display:grid;grid-template-columns:68px 1fr 160px 88px;gap:6px;align-items:center;padding:6px 6px;border-radius:8px;transition:background .1s}
+.trow:not(:last-child){border-bottom:1px solid var(--border)}
+.trow.has-val{background:var(--surface);border:1px solid var(--border);margin:2px 0;padding:7px 8px}
+.qrow{display:grid;grid-template-columns:68px 1fr auto;gap:6px;align-items:center;padding:5px 6px;border-radius:8px}
+.qrow:not(:last-child){border-bottom:1px solid var(--border)}
+.noref{display:flex;align-items:center;justify-content:center;height:12px;border-radius:6px;background:var(--surface2);font-size:10px;color:var(--tx3);font-style:italic}
+.code{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--tx2);line-height:1.3}
+.gmark{display:inline-block;font-size:8px;padding:0 4px;border-radius:99px;background:var(--ok-lt);color:var(--ok-tx);border:1px solid #7ab87d;margin-left:3px;vertical-align:middle}
+.note{font-size:9px;color:var(--tx3);margin-top:1px}
+.name{font-size:12px;color:var(--tx);line-height:1.35}
+
+/* ── Bar ───────────────────────────────────── */
+.bar{height:12px;border-radius:6px;background:var(--surface2);position:relative;overflow:visible}
+.bar-lo{position:absolute;left:0;height:100%;border-radius:6px 0 0 6px;background:var(--lo)}
+.bar-ok{position:absolute;height:100%;background:var(--ok)}
+.bar-hi{position:absolute;height:100%;border-radius:0 6px 6px 0;background:var(--hi)}
+.dot{position:absolute;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px currentColor;z-index:2}
+
+/* ── Value cell ────────────────────────────── */
+.valcell{text-align:right;line-height:1.6}
+.valnum{font-size:13px;font-weight:500;font-family:var(--mono)}
+.valu{font-size:9px;color:var(--tx3)}
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:9px;font-weight:500;white-space:nowrap;margin-top:1px}
+.b-ok{ background:var(--ok-lt);  color:var(--ok-tx); border:1px solid #7ab87d}
+.b-lo{ background:var(--lo-badge-bg);  color:var(--lo-badge-tx); border:1px solid #c99090}
+.b-lox{background:var(--lox-badge-bg); color:var(--lox-badge-tx);border:1px solid #d08080}
+.b-hi{ background:var(--hi-lt);  color:var(--hi-tx); border:1px solid #b87a88}
+.b-hix{background:#ddb0bb; color:#3d0f18; border:1px solid #a06878}
+.qbadge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;background:#d0ede5;color:#0f6e56;border:1px solid #7ac5b0}
+
+/* ── Filter tag ────────────────────────────── */
+.ftag{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:99px;font-size:11px;font-weight:500;margin-bottom:10px;cursor:pointer;border:1px solid}
+
+/* ── Category grid ─────────────────────────── */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;cursor:pointer;transition:border-color .15s}
+.ccard:hover{border-color:var(--border2)}
+.ccard .ct{font-size:13px;font-weight:500;color:var(--tx)}
+.ccard .cn{font-size:11px;color:var(--tx2);margin-top:3px}
+
+/* ── Modal ─────────────────────────────────── */
+.modal-wrap{position:fixed;inset:0;background:#0000007a;display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
+.mbox{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:22px;width:100%;max-width:380px;box-shadow:0 20px 60px #0000002a}
+.mbox h3{font-size:15px;font-weight:500;margin-bottom:14px;color:var(--tx)}
+.mbox label{font-size:12px;color:var(--tx2);display:block;margin-bottom:4px;font-weight:500}
+.mbox input{width:100%;padding:8px 11px;font-size:13px;font-family:var(--font);border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--tx);outline:none;margin-bottom:12px;transition:border-color .15s}
+.mbox input:focus{border-color:var(--border2)}
+.msugg{display:flex;flex-wrap:wrap;gap:4px;margin:-8px 0 10px}
+.msugg span{padding:2px 8px;border:1px solid var(--border);border-radius:99px;cursor:pointer;background:var(--surface2);color:var(--tx2);font-size:11px}
+.msugg span:hover{border-color:var(--border2)}
+.mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+
+/* ── Settings panel ────────────────────────── */
+.settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.settings h4{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.settings label{font-size:11px;color:var(--tx2);display:block;margin-bottom:3px;font-weight:500}
+.settings input{width:100%;padding:7px 10px;font-size:12px;font-family:var(--mono);border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--tx);outline:none;margin-bottom:10px;transition:border-color .15s}
+.settings input:focus{border-color:var(--border2)}
+.settings-note{font-size:10px;color:var(--tx3);line-height:1.6;background:var(--surface2);border-radius:7px;padding:8px 10px}
+.settings-note a{color:var(--ok-tx)}
+
+/* ── Notion status ─────────────────────────── */
+.nsync{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);padding:6px 10px;border-radius:7px;background:var(--surface2);margin-bottom:10px}
+.nsync.ok{color:var(--ok-tx);background:var(--ok-lt)}
+.nsync.err{color:var(--lox-badge-tx);background:var(--lox-badge-bg)}
+
+/* ── Responsive ────────────────────────────── */
+@media(max-width:600px){
+  .trow{grid-template-columns:56px 1fr 100px 72px;gap:4px}
+  .name{font-size:11px}
+  .cgrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .scard{padding:8px 12px;min-width:56px}
+  .scard .sv{font-size:17px}
+  .sumbar{gap:6px}
+  .topbar{gap:6px}
+  .btn{padding:6px 11px;font-size:11px}
+}
+@media(max-width:400px){
+  .trow{grid-template-columns:52px 1fr 90px 68px}
+  .bar{height:10px}
+  .cgrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Top controls -->
+<div class="topbar">
+  <button class="btn primary" onclick="loadDemo()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M6 8l2 2 3-3"/></svg>
+    Carregar exemplo
+  </button>
+  <button class="btn" onclick="openModal()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+    Adicionar resultado
+  </button>
+  <button class="btn notion" id="notionBtn" onclick="toggleSettings()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="12" height="12" rx="2"/><path fill="#fff" d="M5 5h6M5 8h6M5 11h4"/></svg>
+    Notion
+  </button>
+  <button class="btn" onclick="clearAll()" id="clrbtn" style="display:none">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    Limpar
+  </button>
+</div>
+
+<!-- Notion settings (hidden by default) -->
+<div class="settings" id="settingsPanel" style="display:none">
+  <h4>
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
+    Integração Notion
+  </h4>
+  <label>API Key da integração</label>
+  <input type="password" id="notionKey" placeholder="secret_xxxxxxxxxxxxxxxxxxx" oninput="saveSettings()">
+  <label>ID da base de dados</label>
+  <input type="text" id="notionDb" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="saveSettings()">
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn primary" onclick="syncNotion()" style="flex:1;justify-content:center">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8A6 6 0 102 8"/><path d="M14 8l-2-2M14 8l2-2"/></svg>
+      Sincronizar
+    </button>
+  </div>
+  <div id="nsyncStatus" style="display:none" class="nsync"></div>
+  <div class="settings-note">
+    <strong>Como configurar:</strong><br>
+    1. Em notion.so → Settings → Connections → Develop or manage integrations → New integration<br>
+    2. Dê um nome, selecione o workspace, copie o <em>Internal Integration Secret</em><br>
+    3. Na sua base de dados, clique em ··· → Connections → adicione sua integração<br>
+    4. Copie o ID da URL da base de dados (o trecho após notion.so/ e antes do ?)<br><br>
+    A base de dados deve ter as colunas: <strong>Exame</strong> (título), <strong>Valor</strong> (número), <strong>Data</strong> (data).<br>
+    A coluna <strong>Faixa</strong> (texto) é opcional — se presente, substitui a faixa padrão.<br><br>
+    <a href="https://developers.notion.com/docs/getting-started" target="_blank">→ Documentação Notion API</a>
+  </div>
+</div>
+
+<!-- Gender toggle -->
+<div class="gender-row">
+  <span class="gender-lbl">Gênero:</span>
+  <div class="gtoggle">
+    <button class="gopt" id="gF" onclick="setGender('F')">Feminino</button>
+    <button class="gopt" id="gM" onclick="setGender('M')">Masculino</button>
+    <button class="gopt on" id="gN" onclick="setGender(null)">Não definido</button>
+  </div>
+  <span class="gpend" id="gpend"></span>
+</div>
+
+<!-- Search -->
+<div class="srch-wrap">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+  <input class="srch" type="text" id="ls" placeholder="Buscar exame (código ou nome)...">
+</div>
+
+<!-- Pills -->
+<div class="pills" id="lp"></div>
+
+<!-- Summary -->
+<div id="sumbox" style="display:none"><div class="sumbar" id="sumbar"></div></div>
+
+<!-- Filter tag -->
+<div id="ftag" style="display:none"></div>
+
+<!-- Legend -->
+<div class="leg">
+  <span><span class="ld" style="background:#f4bbba"></span>Abaixo</span>
+  <span><span class="ld" style="background:#5a905f"></span>Normal</span>
+  <span><span class="ld" style="background:#7a2535"></span>Acima</span>
+  <span style="display:flex;align-items:center"><span class="leg-dot"></span>Resultado</span>
+</div>
+
+<!-- Content -->
+<div id="lc"></div>
+
+</div><!-- .wrap -->
+
+<!-- Add result modal -->
+<div id="lmod" style="display:none">
+<div class="modal-wrap" onclick="if(event.target===this)closeModal()">
+<div class="mbox">
+  <h3>Inserir resultado</h3>
+  <label>Exame (código ou nome)</label>
+  <input type="text" id="ms" placeholder="ex: VIT-D, TSH, Hemoglobina..." oninput="suggestM(this.value)" autocomplete="off">
+  <div id="msugg" class="msugg"></div>
+  <label>Valor numérico</label>
+  <input type="number" id="mv" placeholder="ex: 27.5" step="any">
+  <label>Data do exame (opcional)</label>
+  <input type="date" id="md">
+  <div class="mrow">
+    <button class="btn" onclick="closeModal()">Cancelar</button>
+    <button class="btn primary" onclick="addResult()">Adicionar</button>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+/* ─── Palette ──────────────────────────────── */
+const DOT={ok:'#3a7a40',lo:'#a84050',lox:'#b82020',hi:'#7a2535',hix:'#5a1020'};
+const SL ={ok:'Normal',lo:'Limítrofe baixo',lox:'Baixo',hi:'Limítrofe alto',hix:'Alto'};
+const BAR_LO='#f4bbba', BAR_OK='#5a905f', BAR_HI='#7a2535';
+
+/* ─── Data ─────────────────────────────────── */
+const C=[
+{id:'hemo',l:'Hemograma',tests:[
+{c:'RBC',n:'Eritrócitos',lo:4.0,hi:5.9,loF:3.8,hiF:5.2,u:'M/µL',s:[0,8]},
+{c:'HGB',n:'Hemoglobina',lo:12.0,hi:17.5,loF:12.0,hiF:16.0,u:'g/dL',s:[0,22]},
+{c:'HCT',n:'Hematócrito',lo:36,hi:53,loF:36,hiF:46,u:'%',s:[0,70]},
+{c:'WBC',n:'Leucócitos',lo:4.5,hi:11.0,u:'×10³/µL',s:[0,20]},
+{c:'PLT',n:'Plaquetas',lo:150,hi:400,u:'×10³/µL',s:[0,600]},
+{c:'RDW',n:'Índice de Anisocitose',lo:11.5,hi:14.5,u:'%',s:[8,20]},
+{c:'MCV',n:'Volume Corpuscular Médio',lo:80,hi:100,u:'fL',s:[60,120]},
+{c:'MCH',n:'HB Corp. Média',lo:27,hi:33,u:'pg',s:[20,42]},
+{c:'MCHC',n:'Conc. HB Corp. Média',lo:32,hi:36,u:'g/dL',s:[28,42]},
+{c:'RET',n:'Reticulócitos',lo:0.5,hi:2.0,u:'%',s:[0,5]},
+]},
+{id:'coag',l:'Coagulação',tests:[
+{c:'TP',n:'Tempo de Protrombina',lo:11,hi:14,u:'s',s:[7,25]},
+{c:'TTPA',n:'Tromboplastina Parcial Ativada',lo:25,hi:35,u:'s',s:[18,55]},
+{c:'INR',n:'Razão Normalizada Internacional',lo:0.8,hi:1.2,u:'',s:[0,4]},
+{c:'D-DIM',n:'D-Dímero',lo:0,hi:0.5,u:'mg/L',s:[0,3],nt:'< 0,5 normal'},
+]},
+{id:'gli',l:'Glicemia',tests:[
+{c:'GLI',n:'Glicemia de Jejum',lo:70,hi:99,u:'mg/dL',s:[40,250]},
+{c:'GLI-PP',n:'Glicemia Pós-Prandial',lo:80,hi:140,u:'mg/dL',s:[60,300],nt:'2h após refeição'},
+{c:'HbA1c',n:'Hemoglobina Glicada',lo:4.0,hi:5.6,u:'%',s:[3,12]},
+{c:'INS',n:'Insulina de Jejum',lo:2.6,hi:24.9,u:'µUI/mL',s:[0,50]},
+{c:'TOTG',n:'Teste Oral de Tolerância',lo:0,hi:140,u:'mg/dL',s:[0,300],nt:'2h após 75g glicose'},
+]},
+{id:'renal',l:'Função Renal',tests:[
+{c:'UR',n:'Ureia',lo:10,hi:50,u:'mg/dL',s:[0,120]},
+{c:'CREAT',n:'Creatinina',lo:0.5,hi:1.2,loF:0.5,hiF:1.1,u:'mg/dL',s:[0,4]},
+{c:'AU',n:'Ácido Úrico',lo:2.5,hi:7.2,loF:2.5,hiF:6.0,u:'mg/dL',s:[0,12]},
+{c:'TFG',n:'Taxa de Filtração Glomerular',lo:60,hi:120,u:'mL/min',s:[0,130],nt:'> 60 normal'},
+{c:'MICROALB',n:'Microalbuminúria',lo:0,hi:30,u:'mg/g',s:[0,300]},
+{c:'PROT-24h',n:'Proteinúria 24h',lo:0,hi:150,u:'mg/24h',s:[0,600]},
+{c:'CIS-C',n:'Cistatina C',lo:0.52,hi:0.98,u:'mg/L',s:[0,2.5]},
+]},
+{id:'figado',l:'Fígado & Proteínas',tests:[
+{c:'PTN',n:'Proteínas Totais',lo:6.0,hi:8.0,u:'g/dL',s:[3,11]},
+{c:'ALB',n:'Albumina',lo:3.5,hi:5.2,u:'g/dL',s:[1,7]},
+{c:'GLOB',n:'Globulina',lo:2.0,hi:3.5,u:'g/dL',s:[0,7]},
+{c:'BT',n:'Bilirrubina Total',lo:0.2,hi:1.2,u:'mg/dL',s:[0,3]},
+{c:'BD',n:'Bilirrubina Direta',lo:0,hi:0.4,u:'mg/dL',s:[0,1.5]},
+{c:'BI',n:'Bilirrubina Indireta',lo:0.2,hi:0.8,u:'mg/dL',s:[0,2]},
+{c:'TGO',n:'AST / Aspartato Aminotransf.',lo:10,hi:40,u:'U/L',s:[0,100]},
+{c:'TGP',n:'ALT / Alanina Aminotransf.',lo:7,hi:40,u:'U/L',s:[0,100]},
+{c:'GGT',n:'Gama-Glutamiltransferase',lo:6,hi:71,loF:6,hiF:42,u:'U/L',s:[0,180]},
+{c:'FA',n:'Fosfatase Alcalina',lo:44,hi:147,u:'U/L',s:[0,280]},
+{c:'LDH',n:'Lactato Desidrogenase',lo:135,hi:225,u:'U/L',s:[80,400]},
+]},
+{id:'lipid',l:'Lipídios',tests:[
+{c:'CT',n:'Colesterol Total',lo:0,hi:200,u:'mg/dL',s:[0,350]},
+{c:'LDL',n:'LDL-Colesterol',lo:0,hi:130,u:'mg/dL',s:[0,300]},
+{c:'HDL',n:'HDL-Colesterol',lo:40,hi:90,loF:50,hiF:90,u:'mg/dL',s:[0,130],nt:'> 50 (F) / > 40 (M)'},
+{c:'VLDL',n:'VLDL-Colesterol',lo:2,hi:30,u:'mg/dL',s:[0,80]},
+{c:'TG',n:'Triglicerídeos',lo:0,hi:150,u:'mg/dL',s:[0,500]},
+{c:'APO-A',n:'Apolipoproteína A',lo:100,hi:180,loF:108,hiF:200,u:'mg/dL',s:[50,260]},
+{c:'APO-B',n:'Apolipoproteína B',lo:60,hi:140,loF:60,hiF:130,u:'mg/dL',s:[30,220]},
+{c:'LP(a)',n:'Lipoproteína(a)',lo:0,hi:30,u:'mg/dL',s:[0,100]},
+]},
+{id:'tireo',l:'Tireoide',tests:[
+{c:'TSH',n:'Hormônio Estimulante da Tireoide',lo:0.4,hi:4.0,u:'mUI/L',s:[0,10]},
+{c:'T4L',n:'Tiroxina Livre',lo:0.8,hi:1.8,u:'ng/dL',s:[0,3.5]},
+{c:'T4T',n:'Tiroxina Total',lo:5.0,hi:12.0,u:'µg/dL',s:[2,20]},
+{c:'T3L',n:'Triiodotironina Livre',lo:2.3,hi:4.2,u:'pg/mL',s:[1,8]},
+{c:'T3T',n:'Triiodotironina Total',lo:80,hi:200,u:'ng/dL',s:[40,320]},
+{c:'Anti-TPO',n:'Anticorpo Anti-TPO',lo:0,hi:35,u:'UI/mL',s:[0,200]},
+{c:'Anti-Tg',n:'Anticorpo Anti-Tireoglobulina',lo:0,hi:115,u:'UI/mL',s:[0,400]},
+{c:'TG-ser',n:'Tireoglobulina sérica',lo:2,hi:70,u:'ng/mL',s:[0,150]},
+]},
+{id:'elet',l:'Eletrólitos & Minerais',tests:[
+{c:'Na',n:'Sódio',lo:136,hi:145,u:'mEq/L',s:[125,160]},
+{c:'K',n:'Potássio',lo:3.5,hi:5.0,u:'mEq/L',s:[2.5,7.5]},
+{c:'Cl',n:'Cloro',lo:98,hi:106,u:'mEq/L',s:[90,120]},
+{c:'Ca-I',n:'Cálcio Iônico',lo:1.15,hi:1.35,u:'mmol/L',s:[0.8,1.8]},
+{c:'Ca-T',n:'Cálcio Total',lo:8.6,hi:10.2,u:'mg/dL',s:[6,14]},
+{c:'P',n:'Fósforo',lo:2.5,hi:4.5,u:'mg/dL',s:[1,8]},
+{c:'Mg',n:'Magnésio',lo:1.7,hi:2.4,u:'mg/dL',s:[0.5,5]},
+{c:'Zn',n:'Zinco',lo:60,hi:120,u:'µg/dL',s:[0,220]},
+{c:'Cu',n:'Cobre',lo:70,hi:140,u:'µg/dL',s:[0,250]},
+{c:'Se',n:'Selênio',lo:70,hi:150,u:'µg/L',s:[0,250]},
+]},
+{id:'vit',l:'Vitaminas & Ferro',tests:[
+{c:'VIT-D',n:'25-Hidroxivitamina D',lo:30,hi:100,u:'ng/mL',s:[0,160]},
+{c:'VIT-B12',n:'Vitamina B12 (Cobalamina)',lo:200,hi:900,u:'pg/mL',s:[0,1300]},
+{c:'VIT-B9',n:'Ácido Fólico (B9)',lo:3,hi:20,u:'ng/mL',s:[0,35]},
+{c:'VIT-B6',n:'Vitamina B6',lo:5,hi:50,u:'ng/mL',s:[0,100]},
+{c:'VIT-A',n:'Vitamina A (Retinol)',lo:30,hi:65,u:'µg/dL',s:[0,120]},
+{c:'VIT-E',n:'Vitamina E (Tocoferol)',lo:500,hi:1800,u:'µg/dL',s:[0,2500]},
+{c:'FERR',n:'Ferritina',lo:11,hi:336,loF:11,hiF:307,u:'ng/mL',s:[0,500]},
+{c:'FE',n:'Ferro Sérico',lo:60,hi:170,u:'µg/dL',s:[0,280]},
+{c:'TIBC',n:'Cap. Total Ligação Ferro',lo:250,hi:370,u:'µg/dL',s:[150,500]},
+{c:'SAT-TRANSF',n:'Saturação de Transferrina',lo:20,hi:50,u:'%',s:[0,80]},
+]},
+{id:'horm',l:'Hormônios',tests:[
+{c:'FSH',n:'FSH',lo:1.4,hi:18.1,loF:1.4,hiF:18.1,u:'mUI/mL',s:[0,30],nt:'varia por fase'},
+{c:'LH',n:'LH',lo:1.7,hi:12.6,loF:1.7,hiF:12.6,u:'mUI/mL',s:[0,25]},
+{c:'E2',n:'Estradiol',lo:10,hi:160,loF:10,hiF:160,u:'pg/mL',s:[0,500],nt:'fase folicular'},
+{c:'PROG',n:'Progesterona',lo:0.2,hi:1.5,loF:0.2,hiF:1.5,u:'ng/mL',s:[0,30],nt:'fase folicular'},
+{c:'PRL',n:'Prolactina',lo:2,hi:29,loF:2,hiF:29,u:'ng/mL',s:[0,60]},
+{c:'TT',n:'Testosterona Total',lo:300,hi:1000,loF:15,hiF:70,u:'ng/dL',s:[0,120],sF:[0,120]},
+{c:'TL',n:'Testosterona Livre',lo:50,hi:210,loF:0.5,hiF:8.5,u:'pg/mL',s:[0,15],sF:[0,15]},
+{c:'DHEA-S',n:'Sulfato de DHEA',lo:100,hi:500,loF:45,hiF:430,u:'µg/dL',s:[0,600]},
+{c:'ANDROST',n:'Androstenediona',lo:0.5,hi:3.0,loF:0.3,hiF:3.3,u:'ng/mL',s:[0,6]},
+{c:'SHBG',n:'SHBG',lo:16,hi:120,loF:25,hiF:122,u:'nmol/L',s:[0,160]},
+{c:'AMH',n:'Hormônio Antimülleriano',lo:1.0,hi:7.4,loF:1.0,hiF:7.4,u:'ng/mL',s:[0,12]},
+{c:'17-OHP',n:'17-Hidroxiprogesterona',lo:0.5,hi:2.1,loF:0.2,hiF:1.0,u:'ng/mL',s:[0,5]},
+{c:'HCY',n:'Homocisteína',lo:5,hi:15,u:'µmol/L',s:[0,50]},
+]},
+{id:'infla',l:'Inflamação & Imunidade',tests:[
+{c:'PCR',n:'Proteína C Reativa',lo:0,hi:1.0,u:'mg/dL',s:[0,10]},
+{c:'PCR-US',n:'PCR Ultrassensível',lo:0,hi:1.0,u:'mg/L',s:[0,10]},
+{c:'VHS',n:'Veloc. de Hemossedimentação',lo:0,hi:20,loF:0,hiF:20,u:'mm/h',s:[0,60]},
+{c:'FR',n:'Fator Reumatoide',lo:0,hi:20,u:'UI/mL',s:[0,60]},
+{c:'Anti-CCP',n:'Anticorpo Anti-CCP',lo:0,hi:20,u:'U/mL',s:[0,60]},
+{c:'C3',n:'Complemento C3',lo:90,hi:180,u:'mg/dL',s:[40,260]},
+{c:'C4',n:'Complemento C4',lo:16,hi:47,u:'mg/dL',s:[0,90]},
+{c:'IgA',n:'Imunoglobulina A',lo:90,hi:400,u:'mg/dL',s:[0,600]},
+{c:'IgG',n:'Imunoglobulina G',lo:700,hi:1600,u:'mg/dL',s:[400,2200]},
+{c:'IgM',n:'Imunoglobulina M',lo:40,hi:230,u:'mg/dL',s:[0,350]},
+{c:'IgE',n:'Imunoglobulina E',lo:0,hi:100,u:'UI/mL',s:[0,300]},
+{c:'FAN',n:'Fator Antinuclear',q:true,ex:'< 1:80 (negativo)'},
+]},
+{id:'tumor',l:'Marcadores Tumorais & Ósseos',tests:[
+{c:'CA-125',n:'CA-125',lo:0,hi:35,u:'U/mL',s:[0,100]},
+{c:'CA15-3',n:'CA 15-3',lo:0,hi:31.3,u:'U/mL',s:[0,80]},
+{c:'CA19-9',n:'CA 19-9',lo:0,hi:37,u:'U/mL',s:[0,100]},
+{c:'CEA',n:'CEA',lo:0,hi:5,u:'ng/mL',s:[0,20]},
+{c:'HE4',n:'HE4',lo:0,hi:70,u:'pmol/L',s:[0,160],nt:'pré-menopausa'},
+{c:'AFP',n:'Alfafetoproteína',lo:0,hi:8.0,u:'ng/mL',s:[0,20]},
+{c:'PTH',n:'Paratormônio',lo:15,hi:65,u:'pg/mL',s:[0,130]},
+{c:'OC',n:'Osteocalcina',lo:11,hi:48,loF:11,hiF:43,u:'ng/mL',s:[0,90]},
+{c:'CTX',n:'Telopeptídeo C-Terminal',lo:0,hi:0.573,loF:0,hiF:0.573,u:'ng/mL',s:[0,1.5]},
+{c:'P1NP',n:'Propeptídeo N-Terminal',lo:15,hi:80,loF:15,hiF:80,u:'µg/L',s:[0,160]},
+]},
+{id:'infec',l:'Infecciosos & Sorologia',tests:[
+{c:'Anti-HIV',n:'Anticorpo Anti-HIV 1 e 2',q:true,ex:'Não reagente'},
+{c:'Anti-HAV IgM',n:'Anti-Hepatite A (IgM)',q:true,ex:'Não reagente'},
+{c:'Anti-HAV IgG',n:'Anti-Hepatite A (IgG)',q:true,ex:'Reagente = imunidade'},
+{c:'HBsAg',n:'Antígeno de Superfície HBV',q:true,ex:'Não reagente'},
+{c:'Anti-HBs',n:'Anticorpo Anti-HBs',q:true,ex:'> 10 mUI/mL = imune'},
+{c:'Anti-HBc',n:'Anticorpo Anti-Core HBV',q:true,ex:'Não reagente'},
+{c:'Anti-HCV',n:'Anticorpo Anti-Hepatite C',q:true,ex:'Não reagente'},
+{c:'VDRL',n:'Sífilis – VDRL',q:true,ex:'Não reagente'},
+{c:'FTA-Abs',n:'Sífilis – FTA-Abs',q:true,ex:'Não reagente'},
+{c:'Toxo-IgM',n:'Toxoplasma IgM',q:true,ex:'Não reagente'},
+{c:'Toxo-IgG',n:'Toxoplasma IgG',q:true,ex:'Varia (imunidade prévia)'},
+{c:'Rubéola-IgM',n:'Rubéola IgM',q:true,ex:'Não reagente'},
+{c:'Rubéola-IgG',n:'Rubéola IgG',q:true,ex:'Reagente = imunidade'},
+{c:'CMV-IgM',n:'CMV IgM',q:true,ex:'Não reagente'},
+{c:'CMV-IgG',n:'CMV IgG',q:true,ex:'Varia (imunidade prévia)'},
+{c:'HSV-IgM',n:'Herpes Simples IgM',q:true,ex:'Não reagente'},
+{c:'HSV-IgG',n:'Herpes Simples IgG',q:true,ex:'Varia (imunidade prévia)'},
+{c:'HTLV',n:'Anticorpo Anti-HTLV I/II',q:true,ex:'Não reagente'},
+{c:'NS1-Dengue',n:'Antígeno NS1 – Dengue',q:true,ex:'Não detectado'},
+{c:'Zika-IgM',n:'Anticorpo IgM Anti-Zika',q:true,ex:'Não reagente'},
+{c:'Chik-IgM',n:'Anticorpo IgM Anti-Chikungunya',q:true,ex:'Não reagente'},
+]},
+{id:'urina',l:'Urina & Fezes',tests:[
+{c:'EAS',n:'Exame de Urina Tipo I',q:true,ex:'Sem alterações'},
+{c:'UROCULT',n:'Urocultura com Antibiograma',q:true,ex:'< 10.000 UFC/mL'},
+{c:'EPF',n:'Exame Parasitológico de Fezes',q:true,ex:'Negativo'},
+{c:'COPROCULT',n:'Coprocultura',q:true,ex:'Flora normal / negativo'},
+{c:'SOF',n:'Sangue Oculto nas Fezes',q:true,ex:'Negativo'},
+{c:'CALP',n:'Calprotectina Fecal',lo:0,hi:50,u:'µg/g',s:[0,250],nt:'< 50 normal'},
+{c:'H.pylori',n:'Antígeno Fecal H. pylori',q:true,ex:'Negativo'},
+]},
+{id:'gest',l:'Gestação & Rastreio',tests:[
+{c:'β-HCG',n:'Gonadotrofina Coriônica',lo:0,hi:5,loF:0,hiF:5,u:'mUI/mL',s:[0,20],nt:'< 5 não-grávidas'},
+{c:'PAPP-A',n:'Proteína Plasmática A',q:true,ex:'Varia por semana (MoM)'},
+{c:'AFP-gest',n:'Alfafetoproteína (gestação)',lo:0,hi:8.0,u:'ng/mL',s:[0,20]},
+{c:'INH-A',n:'Inibina A',q:true,ex:'Varia por fase / gestação'},
+{c:'E3',n:'Estriol Não Conjugado',lo:0.3,hi:3.0,loF:0.3,hiF:3.0,u:'ng/mL',s:[0,8],nt:'2º trimestre'},
+{c:'COOMBS-I',n:'Teste de Coombs Indireto',q:true,ex:'Não reagente'},
+]},
+{id:'gen',l:'Genética & Farmacogenômica',tests:[
+{c:'CARIO',n:'Cariótipo',q:true,ex:'46,XX (F) / 46,XY (M)'},
+{c:'BRCA1',n:'Gene BRCA1',q:true,ex:'Sem mutação patogênica'},
+{c:'BRCA2',n:'Gene BRCA2',q:true,ex:'Sem mutação patogênica'},
+{c:'FVL',n:'Fator V de Leiden',q:true,ex:'Ausente'},
+{c:'PT-G20210A',n:'Mutação Protrombina G20210A',q:true,ex:'Ausente'},
+{c:'FARMACOGEN',n:'Farmacogenômica',q:true,ex:'Resultado interpretativo'},
+]},
+];
+
+const allTests=[];
+C.forEach(cat=>cat.tests.forEach(t=>allTests.push({...t,cat:cat.id})));
+
+/* ─── State ────────────────────────────────── */
+let results={},dates={},aId=null,sq='',statusFilter=null,mPicked=null,gender=null;
+let notionKey='',notionDb='';
+
+const DEMO={
+'VIT-D':27,'VIT-B12':250,'VIT-B9':30,
+'HGB':14.2,'WBC':7.8,'PLT':230,'RBC':4.8,'MCV':88,'MCH':29,
+'GLI':105,'HbA1c':5.9,'INS':12,
+'CT':210,'LDL':145,'HDL':52,'TG':180,'VLDL':36,
+'TSH':2.1,'T4L':1.2,'T3L':3.1,
+'VIT-A':45,'FERR':22,'FE':88,'SAT-TRANSF':24,
+'Na':139,'K':4.1,'Mg':1.6,'Ca-T':9.4,
+'PCR-US':0.8,'TGO':28,'TGP':35,'GGT':58,'FA':95,
+'CREAT':0.9,'UR':32,'AU':6.1,'ALB':4.2,'BT':0.9
+};
+
+/* ─── Helpers ──────────────────────────────── */
+function resolveRange(t){
+  if(gender==='F'&&t.loF!=null&&t.hiF!=null)return{lo:t.loF,hi:t.hiF,s:t.sF||t.s,gS:true};
+  if(gender==='M'&&t.loM!=null&&t.hiM!=null)return{lo:t.loM,hi:t.hiM,s:t.sM||t.s,gS:true};
+  if(gender==='M'&&t.loF!=null)return{lo:null,hi:null,s:t.s,gS:false,pending:true};
+  return{lo:t.lo,hi:t.hi,s:t.s,gS:false};
+}
+function pct(v,mn,mx){return Math.max(0,Math.min(100,(v-mn)/(mx-mn)*100));}
+function statusOf(t,v){
+  if(v==null||t.q)return null;
+  const r=resolveRange(t);
+  if(r.pending||r.lo==null)return null;
+  const sp=r.hi-r.lo,d=v<r.lo?r.lo-v:v>r.hi?v-r.hi:0;
+  const pd=sp>0?d/sp:0;
+  if(v<r.lo)return pd>0.4?'lox':'lo';
+  if(v>r.hi)return pd>0.4?'hix':'hi';
+  return'ok';
+}
+function rngLabel(t){
+  const r=resolveRange(t);
+  if(r.pending)return'—';
+  if(!r.lo)return`< ${r.hi}`;
+  return`${r.lo} – ${r.hi}`;
+}
+
+/* ─── Bar HTML ─────────────────────────────── */
+function barHtml(t){
+  const r=resolveRange(t);
+  const[sm,sx]=r.s;
+  if(r.pending)return`<div class="noref">ref. masculina em breve</div>`;
+  const{lo,hi}=r;
+  const lp=pct(lo,sm,sx),hp=pct(hi,sm,sx),nw=hp-lp;
+  let dot='';
+  const v=results[t.c];
+  if(v!=null){
+    const dp=pct(v,sm,sx);
+    const st=statusOf(t,v);
+    dot=`<div class="dot" style="left:calc(${dp}% - 6px);background:${st?DOT[st]:'#999'};color:${st?DOT[st]:'#999'}"></div>`;
+  }
+  return`<div class="bar">
+    <div class="bar-lo" style="width:${lp}%"></div>
+    <div class="bar-ok" style="left:${lp}%;width:${nw}%"></div>
+    <div class="bar-hi" style="left:${hp}%;width:${100-hp}%"></div>
+    ${dot}
+  </div>`;
+}
+
+/* ─── Value cell ───────────────────────────── */
+function valCell(t){
+  const v=results[t.c];
+  const r=resolveRange(t);
+  if(v==null){
+    return`<div class="valcell"><span style="font-size:10px;color:var(--tx3)">${rngLabel(t)}</span><br><span style="font-size:9px;color:var(--tx3)">${t.u||''}</span></div>`;
+  }
+  const st=statusOf(t,v);
+  const col=st?DOT[st]:'var(--tx2)';
+  const badge=st?`<span class="badge b-${st}">${SL[st]}</span>`:(r.pending?`<span style="font-size:9px;color:var(--tx3)">sem ref. ♂</span>`:'');
+  const dateStr=dates[t.c]?`<div style="font-size:9px;color:var(--tx3);margin-top:1px">${dates[t.c]}</div>`:'';
+  return`<div class="valcell"><span class="valnum" style="color:${col}">${v}</span> <span class="valu">${t.u||''}</span><br>${badge}${dateStr}</div>`;
+}
+
+/* ─── Row HTML ─────────────────────────────── */
+function rowHtml(t){
+  const hasVal=results[t.c]!=null;
+  if(t.q)return`<div class="qrow"><div><span class="code">${t.c}</span></div><span class="name">${t.n}</span><span class="qbadge">${t.ex||'—'}</span></div>`;
+  const r=resolveRange(t);
+  const gb=r.gS?`<span class="gmark">${gender==='F'?'♀':'♂'}</span>`:'';
+  return`<div class="trow${hasVal?' has-val':''}">
+    <div><span class="code">${t.c}${gb}</span>${t.nt?`<div class="note">${t.nt}</div>`:''}</div>
+    <span class="name">${t.n}</span>
+    ${barHtml(t)}
+    ${valCell(t)}
+  </div>`;
+}
+
+/* ─── Summary ──────────────────────────────── */
+function calcSum(){
+  let ok=0,lo=0,attn=0;
+  Object.keys(results).forEach(k=>{
+    const t=allTests.find(x=>x.c===k);
+    if(!t||t.q)return;
+    const s=statusOf(t,results[k]);
+    if(s==='ok')ok++;
+    else if(s==='lo'||s==='hi')lo++;
+    else if(s==='lox'||s==='hix')attn++;
+  });
+  return{tot:Object.keys(results).length,ok,lo,attn};
+}
+
+function renderSummary(){
+  const sb=document.getElementById('sumbox');
+  if(!Object.keys(results).length){sb.style.display='none';return;}
+  sb.style.display='';
+  const{tot,ok,lo,attn}=calcSum();
+  const cards=[
+    {v:tot,l:'Exames',col:'var(--tx)',sf:null},
+    {v:ok,l:'Normais',col:DOT.ok,sf:'ok'},
+    {v:attn,l:'Atenção',col:DOT.lox,sf:'attn'},
+    {v:lo,l:'Limítrofe',col:DOT.lo,sf:'limb'},
+  ];
+  document.getElementById('sumbar').innerHTML=cards.map(c=>
+    `<div class="scard${statusFilter===c.sf&&c.sf?' active':''}" onclick="filterStatus('${c.sf||''}')">
+      <div class="sv" style="color:${c.col}">${c.v}</div>
+      <div class="sl">${c.l}</div>
+    </div>`).join('');
+}
+
+/* ─── Filter ───────────────────────────────── */
+function filterStatus(sf){
+  const val=sf||null;
+  statusFilter=statusFilter===val?null:val;
+  if(statusFilter){aId=null;sq='';document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));}
+  render();
+}
+
+function filtered(){
+  let cats;
+  if(sq){const q=sq.toLowerCase();cats=C.map(cat=>({...cat,tests:cat.tests.filter(t=>t.c.toLowerCase().includes(q)||t.n.toLowerCase().includes(q))})).filter(c=>c.tests.length);}
+  else if(aId){cats=[C.find(c=>c.id===aId)].filter(Boolean);}
+  else cats=C;
+  if(statusFilter){
+    cats=cats.map(cat=>({...cat,tests:cat.tests.filter(t=>{
+      const v=results[t.c];if(v==null)return false;
+      const s=statusOf(t,v);
+      if(statusFilter==='ok')return s==='ok';
+      if(statusFilter==='attn')return s==='lox'||s==='hix';
+      if(statusFilter==='limb')return s==='lo'||s==='hi';
+      return true;
+    })})).filter(c=>c.tests.length);
+  }
+  return cats;
+}
+
+/* ─── Render ───────────────────────────────── */
+function render(){
+  renderSummary();
+  const lc=document.getElementById('lc'),ftag=document.getElementById('ftag');
+  const hasRes=Object.keys(results).length>0;
+  if(statusFilter){
+    const labels={ok:'Normais',attn:'Atenção',limb:'Limítrofe'};
+    const cols={ok:DOT.ok,attn:DOT.lox,limb:DOT.lo};
+    const bgs={ok:'#d6ead7',attn:'#f5c0c0',limb:'#eeb4af'};
+    ftag.style.display='';
+    ftag.innerHTML=`<span class="ftag" style="background:${bgs[statusFilter]};color:${cols[statusFilter]};border-color:${cols[statusFilter]}" onclick="filterStatus('${statusFilter}')">Filtrando: ${labels[statusFilter]} ✕</span>`;
+  } else ftag.style.display='none';
+
+  const f=filtered();
+  if(!sq&&!aId&&!hasRes&&!statusFilter){
+    lc.innerHTML=`<div class="cgrid">${C.map(cat=>`<div class="ccard" onclick="sel('${cat.id}')"><div class="ct">${cat.l}</div><div class="cn">${cat.tests.length} exame${cat.tests.length>1?'s':''}</div></div>`).join('')}</div>`;
+    return;
+  }
+  if(!sq&&!aId&&hasRes&&!statusFilter){
+    const withRes=C.map(cat=>({...cat,tests:cat.tests.filter(t=>results[t.c]!=null)})).filter(c=>c.tests.length);
+    const rest=C.filter(cat=>!withRes.find(w=>w.id===cat.id));
+    lc.innerHTML=
+      (withRes.length?`<div style="font-size:11px;font-weight:500;color:var(--tx2);margin-bottom:8px">Resultados inseridos</div>`+withRes.map(cat=>`<div class="sec">${cat.l}</div><div>${cat.tests.map(rowHtml).join('')}</div>`).join(''):'')
+      +(rest.length?`<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--tx2);margin-bottom:8px">Demais categorias</div><div class="cgrid">${rest.map(cat=>`<div class="ccard" onclick="sel('${cat.id}')"><div class="ct">${cat.l}</div><div class="cn">${cat.tests.length} exames</div></div>`).join('')}</div></div>`:'');
+    return;
+  }
+  if(!f.length){lc.innerHTML=`<div style="font-size:13px;color:var(--tx2);padding:20px 0;text-align:center">Nenhum resultado encontrado.</div>`;return;}
+  lc.innerHTML=f.map(cat=>`<div class="sec">${cat.l}</div><div>${cat.tests.map(rowHtml).join('')}</div>`).join('');
+}
+
+/* ─── Actions ──────────────────────────────── */
+function sel(id){aId=aId===id?null:id;sq='';statusFilter=null;document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('on',p.dataset.id===aId));render();}
+function loadDemo(){results={...DEMO};dates={};sq='';aId=null;statusFilter=null;document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));document.getElementById('clrbtn').style.display='';render();}
+function clearAll(){results={};dates={};statusFilter=null;document.getElementById('clrbtn').style.display='none';render();}
+function setGender(g){
+  gender=g;
+  ['F','M','N'].forEach(x=>{const el=document.getElementById('g'+x);if(el)el.classList.toggle('on',(g==='F'&&x==='F')||(g==='M'&&x==='M')||(g===null&&x==='N'));});
+  const p=document.getElementById('gpend');
+  p.textContent=g==='M'?'Ref. masculinas em breve — usando faixas gerais':g==='F'?'Faixas femininas ativas':'';
+  render();
+}
+
+/* ─── Modal ────────────────────────────────── */
+function openModal(){mPicked=null;document.getElementById('ms').value='';document.getElementById('mv').value='';document.getElementById('md').value='';document.getElementById('msugg').innerHTML='';document.getElementById('lmod').style.display='';}
+function closeModal(){document.getElementById('lmod').style.display='none';}
+function suggestM(v){
+  const sg=document.getElementById('msugg');
+  if(!v){sg.innerHTML='';mPicked=null;return;}
+  const q=v.toLowerCase();
+  const hits=allTests.filter(t=>!t.q&&(t.c.toLowerCase().includes(q)||t.n.toLowerCase().includes(q))).slice(0,5);
+  sg.innerHTML=hits.map(t=>`<span onclick="pickM('${t.c}')">${t.c} <span style="color:var(--tx3)">${t.n}</span></span>`).join('');
+}
+function pickM(code){mPicked=code;document.getElementById('ms').value=code;document.getElementById('msugg').innerHTML='';document.getElementById('mv').focus();}
+function addResult(){
+  const ms=document.getElementById('ms').value.trim();
+  const mv=parseFloat(document.getElementById('mv').value);
+  const md=document.getElementById('md').value;
+  const code=mPicked||ms.toUpperCase();
+  const t=allTests.find(x=>x.c.toUpperCase()===code||x.n.toLowerCase()===ms.toLowerCase());
+  if(!t||t.q){alert('Exame não encontrado. Use o código ou selecione a sugestão.');return;}
+  if(isNaN(mv)){alert('Insira um valor numérico válido.');return;}
+  results[t.c]=mv;
+  if(md)dates[t.c]=new Date(md).toLocaleDateString('pt-BR');
+  document.getElementById('clrbtn').style.display='';
+  closeModal();aId=null;sq='';statusFilter=null;
+  document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  render();
+}
+
+/* ─── Settings / Notion ────────────────────── */
+function toggleSettings(){
+  const p=document.getElementById('settingsPanel');
+  p.style.display=p.style.display==='none'?'':'none';
+}
+function saveSettings(){
+  notionKey=document.getElementById('notionKey').value.trim();
+  notionDb=document.getElementById('notionDb').value.trim().replace(/-/g,'');
+  try{localStorage.setItem('nk',btoa(notionKey));localStorage.setItem('nd',notionDb);}catch(e){}
+}
+function loadSettings(){
+  try{
+    const k=localStorage.getItem('nk'),d=localStorage.getItem('nd');
+    if(k){notionKey=atob(k);document.getElementById('notionKey').value=notionKey;}
+    if(d){notionDb=d;document.getElementById('notionDb').value=d;}
+  }catch(e){}
+}
+
+async function syncNotion(){
+  if(!notionKey||!notionDb){
+    showNStatus('err','Preencha a API Key e o ID da base de dados.');
+    document.getElementById('settingsPanel').style.display='';
+    return;
+  }
+  showNStatus('loading','Sincronizando com o Notion...');
+  const dbId=notionDb.replace(/-/g,'');
+  // Insert dashes in UUID format if needed
+  const fmtId=dbId.length===32?`${dbId.slice(0,8)}-${dbId.slice(8,12)}-${dbId.slice(12,16)}-${dbId.slice(16,20)}-${dbId.slice(20)}`:notionDb;
+  const proxy='https://corsproxy.io/?';
+  const url=`${proxy}https://api.notion.com/v1/databases/${fmtId}/query`;
+  try{
+    const resp=await fetch(url,{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${notionKey}`,
+        'Notion-Version':'2022-06-28',
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({page_size:100})
+    });
+    if(!resp.ok){const e=await resp.json();showNStatus('err',`Erro ${resp.status}: ${e.message||'verifique a API key e permissões'}`);return;}
+    const data=await resp.json();
+    let added=0;
+    data.results.forEach(page=>{
+      const title=page.properties?.Exame?.title?.[0]?.plain_text||page.properties?.Name?.title?.[0]?.plain_text||'';
+      const valor=page.properties?.Valor?.number;
+      const data_str=page.properties?.Data?.date?.start||'';
+      if(!title||valor==null)return;
+      const code=title.trim().toUpperCase();
+      const t=allTests.find(x=>x.c.toUpperCase()===code);
+      if(!t||t.q)return;
+      results[t.c]=valor;
+      if(data_str)dates[t.c]=new Date(data_str).toLocaleDateString('pt-BR');
+      added++;
+    });
+    document.getElementById('clrbtn').style.display='';
+    aId=null;sq='';statusFilter=null;
+    document.getElementById('ls').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+    render();
+    showNStatus('ok',`${added} resultado${added!==1?'s':''} importado${added!==1?'s':''} do Notion.`);
+    document.getElementById('notionBtn').classList.add('synced');
+  }catch(e){
+    showNStatus('err','Erro de rede. Verifique a chave e tente novamente.');
+  }
+}
+function showNStatus(type,msg){
+  const el=document.getElementById('nsyncStatus');
+  el.style.display='flex';
+  el.className='nsync'+(type==='ok'?' ok':type==='err'?' err':'');
+  const icons={ok:'✓',err:'✕',loading:'↻'};
+  el.textContent=`${icons[type]||''} ${msg}`;
+}
+
+/* ─── Init ─────────────────────────────────── */
+(function init(){
+  document.getElementById('lp').innerHTML=C.map(cat=>`<button class="pill" data-id="${cat.id}" onclick="sel('${cat.id}')">${cat.l}</button>`).join('');
+  document.getElementById('ls').addEventListener('input',function(){sq=this.value.trim();aId=null;statusFilter=null;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));render();});
+  loadSettings();
+  render();
+})();
+</script>
+</body>
+</html>
